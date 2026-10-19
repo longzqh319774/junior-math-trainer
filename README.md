@@ -155,9 +155,18 @@ pip install -r requirements.txt
 
 ## 六、部署到 GitHub Pages
 
-1. 把仓库推送到 GitHub
-2. 仓库 Settings → Pages → **Source** 选 `GitHub Actions`
-3. 推送到 `main` 分支后自动部署，Actions 里能看到进度
+1. 在 GitHub 上新建一个**空仓库**（不要勾选 README / .gitignore），仓库名建议 `junior-math-trainer`
+2. 编辑 `publish.sh`，把顶部的 `USERNAME` 改成你的 GitHub 用户名
+3. 执行：
+
+   ```bash
+   bash publish.sh
+   ```
+
+   首次推送会弹出 GitHub 登录窗口（或把脚本里的地址换成 SSH 地址以免密推送）
+
+4. 仓库 Settings → Pages → **Source** 选 `GitHub Actions`
+5. 之后每次推送到 `main` 都会自动部署，Actions 页面能看到进度
 
 工作流只上传 `site/` 目录，你的试卷与题库不会被带上。
 
