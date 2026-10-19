@@ -1,0 +1,2 @@
+# 统一以 LF 入库，避免 Windows 检出产生 CRLF 导致 CI / 脚本异常
+* text=auto eol=lf

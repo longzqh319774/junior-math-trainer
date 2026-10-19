@@ -1,0 +1,28 @@
+# ============================================================
+# 题库数据与配图：由本地脚本生成，一律不入库
+# （真题、教辅题目及其扫描图属原权利人所有，不得随仓库公开传播）
+# ============================================================
+site/data.js
+site/img/*
+!site/img/.gitkeep
+data/raw/*.json
+data/figure_need.json
+data/figure_map.json
+
+# 用户放置试卷的目录与运行日志
+papers/*
+!papers/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 编辑器与系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

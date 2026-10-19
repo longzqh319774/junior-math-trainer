@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>初中数学知识框架 · 点击刷题系统</title>
+<style>
+  :root{
+    --ink:#1f2937; --sub:#6b7280; --line:#e5e7eb; --bg:#f1f5f9;
+    --blue:#2563eb; --blue-bg:#eff6ff; --green:#059669; --green-bg:#ecfdf5;
+    --orange:#d97706; --orange-bg:#fffbeb; --purple:#7c3aed; --purple-bg:#f5f3ff;
+    --red:#dc2626; --red-bg:#fef2f2; --cyan:#0891b2; --cyan-bg:#ecfeff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;padding:0 0 60px;}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 16px;}
+  header{background:linear-gradient(120deg,#1d4ed8,#3b82f6 60%,#06b6d4);color:#fff;padding:26px 16px 22px;text-align:center;}
+  header h1{font-size:26px;letter-spacing:2px;}
+  header p{font-size:13.5px;opacity:.92;margin-top:6px;}
+  header .stat{margin-top:10px;font-size:12.5px;background:rgba(255,255,255,.16);display:inline-block;padding:4px 16px;border-radius:16px;}
+  /* 面包屑 */
+  .crumb{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .crumb .inner{max-width:1060px;margin:0 auto;display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:13px;}
+  .crumb .step{color:var(--sub);}
+  .crumb .step.active{color:#111827;font-weight:700;}
+  .crumb .step.clickable{color:var(--blue);cursor:pointer;}
+  .crumb .step.clickable:hover{text-decoration:underline;}
+  .crumb .sep{color:#cbd5e1;}
+  /* 简略版总览 */
+  h2.sec{font-size:19px;margin:28px 0 14px;padding-left:10px;border-left:4px solid var(--blue);color:#111827;}
+  h2.sec.p2{border-color:var(--green);} h2.sec.p3{border-color:var(--orange);}
+  h2.sec.p4{border-color:var(--purple);} h2.sec.p5{border-color:var(--cyan);}
+  .grid{display:grid;gap:14px;}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  @media(max-width:760px){.g2{grid-template-columns:1fr;}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .card h3{font-size:15.5px;margin-bottom:10px;padding-bottom:7px;border-bottom:1px dashed var(--line);color:#111827;}
+  .term{display:inline-block;background:var(--blue-bg);color:#1d4ed8;border:1px solid #bfdbfe;border-radius:8px;padding:2px 10px;margin:3px 4px 3px 0;font-size:13px;cursor:pointer;transition:all .15s;font-weight:600;}
+  .term:hover{background:#1d4ed8;color:#fff;transform:translateY(-1px);}
+  .term .cnt{font-size:11px;font-weight:400;opacity:.75;margin-left:3px;}
+  .card ul{list-style:none;font-size:13px;}
+  .card li{padding:2.5px 0 2.5px 13px;position:relative;color:#374151;}
+  .card li::before{content:"·";position:absolute;left:2px;color:#9ca3af;font-weight:bold;}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin:12px 0;}
+  .flow b{background:#fff;border:1.5px solid var(--blue);color:var(--blue);border-radius:18px;padding:4px 14px;font-size:13px;font-weight:600;}
+  .arrow{color:#9ca3af;font-size:16px;}
+  /* 概念详情 */
+  .concept-head{display:flex;align-items:center;gap:12px;margin:22px 0 12px;}
+  .concept-head .badge{font-size:12px;color:#fff;background:var(--blue);border-radius:8px;padding:3px 10px;white-space:nowrap;}
+  .concept-head h2{font-size:21px;color:#111827;flex:1;}
+  .concept-head .back{font-size:13px;color:var(--blue);cursor:pointer;background:var(--blue-bg);border:1px solid #bfdbfe;border-radius:8px;padding:5px 12px;}
+  .concept-head .back:hover{background:#1d4ed8;color:#fff;}
+  .detail-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.04);font-size:14px;}
+  .detail-card b{color:#111827;}
+  .detail-card ul{padding-left:20px;margin:6px 0;}
+  .detail-card li{margin:4px 0;}
+  .detail-card .def{background:var(--blue-bg);border-left:3px solid var(--blue);padding:10px 14px;border-radius:6px;margin:8px 0;}
+  .detail-card .warn{background:var(--red-bg);border-left:3px solid var(--red);padding:10px 14px;border-radius:6px;margin:8px 0;font-size:13.5px;}
+  .detail-card .ext{background:var(--purple-bg);border-left:3px solid var(--purple);padding:10px 14px;border-radius:6px;margin:8px 0;font-size:13.5px;}
+  .detail-card .exm{background:var(--green-bg);border-left:3px solid var(--green);padding:10px 14px;border-radius:6px;margin:8px 0;font-size:13.5px;}
+  .detail-card .formula{font-family:"Times New Roman",serif;font-size:14.5px;background:#fffbeb;border:1px dashed #f59e0b;padding:4px 11px;border-radius:6px;display:inline-block;margin:3px 5px 3px 0;}
+  .detail-card table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0;border-radius:8px;overflow:hidden;}
+  .detail-card th{background:#334155;color:#fff;padding:6px 9px;text-align:left;}
+  .detail-card td{padding:6px 9px;border-bottom:1px solid var(--line);vertical-align:top;}
+  .detail-card tr:nth-child(even) td{background:#fafbfd;}
+  /* 题型面板 */
+  .open-types{margin:18px 0 8px;display:flex;align-items:center;gap:10px;}
+  .open-types button{font-size:14.5px;font-weight:600;color:#fff;background:linear-gradient(90deg,#1d4ed8,#3b82f6);border:none;border-radius:10px;padding:9px 22px;cursor:pointer;box-shadow:0 2px 6px rgba(37,99,235,.3);transition:transform .15s;}
+  .open-types button:hover{transform:translateY(-2px);}
+  .open-types .hint{font-size:12.5px;color:var(--sub);}
+  .types-panel{display:none;margin:6px 0 10px;}
+  .types-panel.show{display:block;}
+  .type-chip{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:8px 14px;margin:5px 6px 5px 0;font-size:13.5px;cursor:pointer;transition:all .15s;font-weight:600;color:#334155;}
+  .type-chip:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-bg);transform:translateY(-2px);box-shadow:0 3px 8px rgba(37,99,235,.12);}
+  .type-chip .n{font-size:11.5px;background:#e2e8f0;border-radius:9px;padding:1px 8px;color:#475569;font-weight:400;}
+  /* 难度 */
+  .diff-head{margin:22px 0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .diff-head h2{font-size:19px;color:#111827;flex:1;}
+  .diff-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:8px 0 16px;}
+  @media(max-width:700px){.diff-grid{grid-template-columns:repeat(2,1fr);}}
+  .diff-btn{border:none;border-radius:12px;padding:18px 10px;text-align:center;cursor:pointer;transition:transform .15s;color:#fff;}
+  .diff-btn:hover{transform:translateY(-3px);box-shadow:0 5px 14px rgba(0,0,0,.15);}
+  .diff-btn .dname{font-size:17px;font-weight:700;letter-spacing:2px;}
+  .diff-btn .dcount{font-size:12px;opacity:.9;margin-top:3px;}
+  .diff-btn.d1{background:linear-gradient(135deg,#10b981,#059669);}
+  .diff-btn.d2{background:linear-gradient(135deg,#3b82f6,#2563eb);}
+  .diff-btn.d3{background:linear-gradient(135deg,#f59e0b,#d97706);}
+  .diff-btn.d4{background:linear-gradient(135deg,#ef4444,#dc2626);}
+  .diff-btn.disabled{background:#cbd5e1;cursor:not-allowed;transform:none;box-shadow:none;}
+  /* 题目卡 */
+  .prob-card{background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:10px;padding:16px 20px;margin:12px 0;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .prob-card .meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;margin-bottom:8px;}
+  .prob-card .meta .src{background:#e2e8f0;color:#334155;border-radius:8px;padding:1px 9px;}
+  .prob-card .meta .diff{border-radius:8px;padding:1px 9px;color:#fff;}
+  .prob-card .meta .diff.简单{background:#059669;} .prob-card .meta .diff.中等{background:#2563eb;}
+  .prob-card .meta .diff.较难{background:#d97706;} .prob-card .meta .diff.难{background:#dc2626;}
+  .prob-card .qtext{font-size:14.5px;color:#111827;white-space:pre-wrap;}
+  .qimgs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .qimgs img{max-width:100%;max-height:380px;border:1px solid var(--line);border-radius:6px;background:#fafbfd;}
+  .ans-btn{margin-top:10px;font-size:13px;color:var(--blue);background:var(--blue-bg);border:1px solid #bfdbfe;border-radius:8px;padding:5px 16px;cursor:pointer;font-weight:600;}
+  .ans-btn:hover{background:#1d4ed8;color:#fff;border-color:#1d4ed8;}
+  .anstext{display:none;margin-top:10px;background:var(--green-bg);border:1px solid #a7f3d0;border-radius:8px;padding:11px 15px;font-size:13.5px;color:#065f46;white-space:pre-wrap;}
+  .anstext.show{display:block;}
+  .empty{background:#fff;border:1px dashed #cbd5e1;border-radius:10px;padding:30px;text-align:center;color:var(--sub);font-size:14px;margin:14px 0;}
+  .back-line{margin:16px 0;}
+  .back-line span{display:inline-block;font-size:13px;color:var(--blue);cursor:pointer;background:#fff;border:1px solid #bfdbfe;border-radius:8px;padding:6px 14px;margin-right:8px;}
+  .back-line span:hover{background:#1d4ed8;color:#fff;}
+  .note{background:var(--red-bg);border:1px solid #fecaca;border-radius:10px;padding:12px 16px;font-size:12.5px;color:#7f1d1d;margin:20px 0;}
+  footer{text-align:center;color:var(--sub);font-size:12px;margin-top:44px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>初中数学知识框架 · 点击刷题系统</h1>
+  <p>简略版 ➜ 概念详解 ➜ 题型 ➜ 难度 ➜ 习题 ｜ 人教版（七上—九下）知识体系</p>
+  <div class="stat" id="globalStat">题库加载中…</div>
+</header>
+
+<div class="crumb"><div class="inner" id="crumb"></div></div>
+
+<div class="wrap" id="main"></div>
+
+<footer>
+  知识框架依据人教版初中数学教材整理 ｜
+  仓库本身<b>不含任何真题与教辅内容</b>，题目需自行导入（见 README）
+</footer>
+
+<!-- 示例题库：仓库自带、开箱即用，全部为自编通用例题 -->
+<script src="sample-data.js"></script>
+<!-- 真实题库：由 tools/build_data_js.py 生成，已被 .gitignore 排除。文件不存在时自动回退到示例题库 -->
+<script src="data.js" onerror="console.info('[提示] 未找到 site/data.js，当前使用示例题库。运行 tools/build_data_js.py 可导入自己的题源。')"></script>
+<script>
+/* 优先使用导入的真实题库，否则回退到仓库自带的示例题库 */
+const HAS_REAL_DATA = (typeof FULL_PROBLEMS !== 'undefined' && FULL_PROBLEMS.length > 0);
+const PROBLEMS = HAS_REAL_DATA ? FULL_PROBLEMS
+               : (typeof SAMPLE_PROBLEMS !== 'undefined' ? SAMPLE_PROBLEMS : []);
+
+/* ================= 概念库（对应详细版） ================= */
+const CONCEPTS = {
+"有理数":{part:"一、数与式",grade:"七上",html:`
+<div class="def"><b>概念：</b>整数和分数统称<b>有理数</b>。0 既不是正数也不是负数。</div>
+<ul><li><b>数轴</b>：规定了原点、正方向、单位长度的直线，实数与数轴上的点一一对应。</li>
+<li><b>相反数</b>：只有符号不同的两个数；a+b=0 ⟺ a、b 互为相反数。</li>
+<li><b>绝对值</b>：|a|=a(a&gt;0)；=0(a=0)；=−a(a&lt;0)。几何意义：点到原点的距离，<b>|a|≥0</b>。</li>
+<li><b>大小比较</b>：正数&gt;0&gt;负数；两个负数比较，<b>绝对值大的反而小</b>。</li>
+<li><b>运算法则</b>：同号相加取相同符号；异号取绝对值较大者符号；同号得正、异号得负（乘除）；除以一个不为0的数等于乘其倒数。</li></ul>
+<div class="formula">科学记数法：a×10ⁿ（1≤|a|&lt;10）</div>
+<div class="warn"><b>易错：</b>−2²=−4 而 (−2)²=4；|a|=−a 时 a≤0 均可。</div>
+<div class="ext"><b>常考：</b>数轴动点问题、规律探究、科学记数法。</div>`},
+"实数":{part:"一、数与式",grade:"七下",html:`
+<div class="def"><b>概念：</b><b>平方根</b>：若 x²=a 则 x=±√a（a≥0）；正的平方根叫<b>算术平方根</b>√a。<b>立方根</b>：x³=a 则 x=∛a。<b>无理数</b>：无限不循环小数。有理数与无理数统称<b>实数</b>。</div>
+<ul><li>非负性：√a≥0；几个非负数之和为0，则每个都为0。</li>
+<li>√a²=|a|；(√a)²=a(a≥0)；∛(−a)=−∛a。</li>
+<li>估算：确定 √a 在哪两个整数之间（夹逼法）。</li></ul>
+<div class="warn"><b>易错：</b>√4 的平方根是 ±√2；负数没有平方根但有立方根。</div>`},
+"整式":{part:"一、数与式",grade:"七上·八上",html:`
+<div class="def"><b>概念：</b><b>单项式</b>：数与字母的积；<b>多项式</b>：几个单项式的和；<b>同类项</b>：字母相同且相同字母指数也相同。</div>
+<div class="formula">aᵐ·aⁿ=aᵐ⁺ⁿ</div><div class="formula">(aᵐ)ⁿ=aᵐⁿ</div><div class="formula">(ab)ⁿ=aⁿbⁿ</div><div class="formula">aᵐ÷aⁿ=aᵐ⁻ⁿ</div><div class="formula">a⁰=1(a≠0)</div><div class="formula">a⁻ᵖ=1/aᵖ</div>
+<h4 style="margin:10px 0 4px">乘法公式（重中之重）</h4>
+<div class="formula">(a+b)(a−b)=a²−b²</div><div class="formula">(a±b)²=a²±2ab+b²</div>
+<ul><li>变形：a²+b²=(a+b)²−2ab；(a+b)²−(a−b)²=4ab。</li></ul>
+<div class="warn"><b>易错：</b>(a+b)²≠a²+b²；去括号注意变号；幂运算 aᵐ·aⁿ 与 (aᵐ)ⁿ 区分。</div>
+<div class="ext"><b>常考：</b>整体代换求值、规律探究、定义新运算、几何图形验证乘法公式。</div>`},
+"因式分解":{part:"一、数与式",grade:"八上",html:`
+<div class="def"><b>概念：</b>把一个多项式化为几个整式的<b>积</b>的形式，与整式乘法互为逆过程，必须分解到不能再分为止。</div>
+<ul><li><b>提公因式法</b>：ma+mb+mc=m(a+b+c)，首项为负先提负号。</li>
+<li><b>公式法</b>：a²−b²=(a+b)(a−b)；a²±2ab+b²=(a±b)²。</li>
+<li><b>十字相乘法（高频）</b>：x²+(p+q)x+pq=(x+p)(x+q)。</li>
+<li><b>分组分解、添拆项、换元</b>（拓展）。</li></ul>
+<div class="warn"><b>易错：</b>分解不彻底（x⁴−y⁴ 需两次平方差）；结果中还有公因式需继续提。</div>`},
+"分式":{part:"一、数与式",grade:"八上",html:`
+<div class="def"><b>概念：</b>形如 A/B（B 中含字母且 B≠0）。<b>分式有意义 ⟺ 分母≠0</b>；分式值为0 ⟺ 分子=0 且分母≠0。</div>
+<ul><li><b>基本性质</b>：分子分母同乘（除）不为0的整式，分式值不变——约分通分的依据。</li>
+<li><b>运算</b>：乘除先因式分解再约分；加减先通分。</li>
+<li>技巧：整体代换（x²−3x+1=0 ⟹ x+1/x=3）。</li></ul>
+<div class="warn"><b>易错：</b>约分与去分母混淆；运算顺序出错。</div>`},
+"二次根式":{part:"一、数与式",grade:"八下",html:`
+<div class="def"><b>概念：</b>形如 √a（a≥0）的式子，被开方数必须非负。</div>
+<div class="formula">√(ab)=√a·√b</div><div class="formula">√(a/b)=√a/√b</div><div class="formula">(√a)²=a</div><div class="formula">√(a²)=|a|</div>
+<ul><li>最简二次根式：被开方数不含分母、不含能开尽的因数。</li>
+<li><b>分母有理化</b>：乘共轭因式，如 1/(√3+1)=(√3−1)/2。</li></ul>
+<div class="warn"><b>易错：</b>√(a²)=|a| 需讨论符号（最经典陷阱）。</div>`},
+"一元一次方程":{part:"二、方程与不等式",grade:"七上",html:`
+<div class="def"><b>概念：</b>只含一个未知数、次数为1的整式方程：ax+b=0（a≠0）。</div>
+<h4 style="margin:8px 0 4px">解法五步</h4>
+<ol style="padding-left:22px"><li>去分母（每项都乘）</li><li>去括号</li><li>移项（变号）</li><li>合并同类项</li><li>系数化为1</li></ol>
+<h4 style="margin:8px 0 4px">实际应用等量关系</h4>
+<table><tr><th>题型</th><th>核心关系</th></tr>
+<tr><td>行程问题</td><td>路程=速度×时间；相遇：路程和；追及：路程差</td></tr>
+<tr><td>工程问题</td><td>工作量=效率×时间，总量常设为1</td></tr>
+<tr><td>利润问题</td><td>售价=进价×(1+利润率)</td></tr></table>`},
+"二元一次方程组":{part:"二、方程与不等式",grade:"七下",html:`
+<div class="def"><b>概念：</b>含两个未知数、次数均为1的方程组，解法核心思想：<b>消元</b>。</div>
+<ul><li><b>代入消元</b>：系数为1时优先。</li>
+<li><b>加减消元</b>：同号相减、异号相加。</li>
+<li>应用：鸡兔同笼、分配、配套、行程问题。</li></ul>`},
+"不等式与不等式组":{part:"二、方程与不等式",grade:"七下",html:`
+<div class="def"><b>概念：</b>使不等式成立的未知数取值范围叫<b>解集</b>。</div>
+<ul><li><b>性质</b>：两边乘（除）<b>负数，不等号方向改变</b>（核心考点）。</li>
+<li>数轴表示：≥、≤ 实心点；&gt;、&lt; 空心圈。</li>
+<li>口诀：同大取大、同小取小、大小小大中间找、大大小小无处找。</li>
+<li>应用：方案决策（方案数为正整数）、含参整数解问题。</li></ul>
+<div class="warn"><b>易错：</b>两边同除以含参字母不讨论符号；边界开闭取错。</div>`},
+"一元二次方程":{part:"二、方程与不等式",grade:"九上",html:`
+<div class="def"><b>概念：</b>ax²+bx+c=0（a≠0）。</div>
+<h4 style="margin:8px 0 4px">四种解法</h4>
+<ol style="padding-left:22px"><li><b>直接开平方</b>：(x+m)²=n（n≥0）</li><li><b>因式分解</b>：化 (x+p)(x+q)=0，最快</li><li><b>配方法</b></li><li><b>公式法</b>：x=[−b±√(b²−4ac)]/2a</li></ol>
+<div class="formula">判别式 Δ=b²−4ac</div><div class="formula">韦达定理：x₁+x₂=−b/a，x₁x₂=c/a（需 Δ≥0）</div>
+<ul><li>对称式：x₁²+x₂²=(x₁+x₂)²−2x₁x₂；|x₁−x₂|=√Δ/|a|。</li>
+<li><b>应用</b>：增长率 a(1+x)ⁿ=b；利润"单件利润×销量"；传播、面积、握手问题。</li></ul>
+<div class="warn"><b>易错：</b>用韦达定理漏掉 Δ≥0 前提；二次项系数含参时漏 a≠0。</div>`},
+"分式方程":{part:"二、方程与不等式",grade:"八上",html:`
+<div class="def"><b>概念：</b>分母中含有未知数的方程，解法：<b>去分母化为整式方程</b>。</div>
+<ul><li>步骤：去分母 → 解整式方程 → <b>验根</b>（最简公分母为0则是增根，舍去）→ 作答。</li>
+<li>含参：增根问题、无解问题分类讨论。</li>
+<li>应用：工程问题、行程问题（顺流逆流）。</li></ul>
+<div class="warn"><b>易错：</b>忘记验根是最常见失分点。</div>`},
+"平面直角坐标系":{part:"三、函数",grade:"七下·八上",html:`
+<div class="def"><b>概念：</b>两条互相垂直、原点重合的数轴。点 P(a,b)。</div>
+<ul><li>象限符号：一(+,+)、二(−,+)、三(−,−)、四(+,−)。</li>
+<li>对称：(a,b) 关于 x轴(a,−b)、y轴(−a,b)、原点(−a,−b)。</li>
+<li>平移：左减右加、下减上加。</li>
+<li>距离与中点（拓展）：d=√[(x₁−x₂)²+(y₁−y₂)²]；中点((x₁+x₂)/2,(y₁+y₂)/2)。</li></ul>`},
+"一次函数":{part:"三、函数",grade:"八下",html:`
+<div class="def"><b>概念：</b>y=kx+b（k≠0）；b=0 时为正比例函数 y=kx。</div>
+<table><tr><th>k、b 符号</th><th>经过象限</th><th>增减性</th></tr>
+<tr><td>k&gt;0,b&gt;0</td><td>一、二、三</td><td rowspan="2">y 随 x 增大而<b>增大</b></td></tr>
+<tr><td>k&gt;0,b&lt;0</td><td>一、三、四</td></tr>
+<tr><td>k&lt;0,b&gt;0</td><td>一、二、四</td><td rowspan="2">y 随 x 增大而<b>减小</b></td></tr>
+<tr><td>k&lt;0,b&lt;0</td><td>二、三、四</td></tr></table>
+<ul><li>k：倾斜程度；b：与 y 轴交点(0,b)。两直线平行 ⟺ k 相等。</li>
+<li>待定系数法：两点定 k、b。</li></ul>
+<div class="exm"><b>典型应用：</b>方案选择、行程图象题、分段计价。</div>
+<div class="ext"><b>常考拓展：</b>一次函数与几何综合（动点）、k 的几何意义。</div>`},
+"反比例函数":{part:"三、函数",grade:"九下",html:`
+<div class="def"><b>概念：</b>y=k/x（k≠0），定义域 x≠0，图象为双曲线。</div>
+<ul><li>k&gt;0 位于一、三象限（每支上 y 随 x 增大而减小）；k&lt;0 位于二、四象限（每支上 y 随 x 增大而增大）。<b>增减性必须强调"在每一支上"</b>。</li>
+<li><b>k 的几何意义（高频）</b>：过曲线上一点作两坐标轴垂线，矩形面积=|k|，三角形面积=|k|/2。</li>
+<li>与一次函数联立：交点、比大小（分段讨论）。</li></ul>`},
+"二次函数":{part:"三、函数",grade:"九上·中考核心",html:`
+<div class="def"><b>概念：</b>y=ax²+bx+c（a≠0）。</div>
+<table><tr><th>形式</th><th>表达式</th><th>适用场景</th></tr>
+<tr><td>一般式</td><td>y=ax²+bx+c</td><td>已知三点</td></tr>
+<tr><td>顶点式</td><td>y=a(x−h)²+k</td><td>已知顶点/最值</td></tr>
+<tr><td>交点式</td><td>y=a(x−x₁)(x−x₂)</td><td>已知与x轴交点</td></tr></table>
+<ul><li>顶点 (−b/2a,(4ac−b²)/4a)，对称轴 x=−b/2a。</li>
+<li><b>平移</b>：左加右减、上加下减。</li>
+<li>对称性：f(x)=f(2m−x)。</li>
+<li>图象信息题：a 开口、c 交y轴、b"左同右异"；b²−4ac、a+b+c(x=1)、a−b+c(x=−1)。</li>
+<li><b>范围型最值</b>：对称轴在区间左、内、右三类讨论。</li></ul>
+<div class="ext"><b>压轴综合：</b>将军饮马+铅垂线最值、面积最值（铅锤法）、等腰/直角/平行四边形存在性（"两圆一线""两线一圆"）。</div>`},
+"线与角":{part:"四、图形与几何",grade:"七上",html:`
+<ul><li><b>直线公理</b>：两点确定一条直线；<b>线段公理</b>：两点之间线段最短。</li>
+<li><b>余角补角</b>：和为90°互余、180°互补；<b>同角（等角）的余角相等、补角相等</b>。</li>
+<li>角平分线；角度换算 1°=60′；钟面角：时针0.5°/分、分针6°/分。</li></ul>`},
+"相交线与平行线":{part:"四、图形与几何",grade:"七下",html:`
+<ul><li><b>对顶角相等</b>；邻补角互补。三线八角（F、Z、U 形）。</li>
+<li><b>判定</b>：同位角相等/内错角相等/同旁内角互补 → 平行。</li>
+<li><b>性质</b>：两直线平行 → 同位角相等/内错角相等/同旁内角互补。"由角定线用判定，由线定角用性质"。</li>
+<li>垂线段最短；平行线间距离处处相等；平移性质。</li></ul>
+<div class="ext"><b>常考：</b>拐点问题（过拐点作平行线）、M/N/W 型角度计算。</div>`},
+"三角形":{part:"四、图形与几何",grade:"八上",html:`
+<ul><li><b>三边关系</b>：两边之和&gt;第三边&gt;两边之差。</li>
+<li><b>内角和=180°</b>；外角等于不相邻两内角之和，大于任何一个不相邻内角。</li>
+<li><b>多边形</b>：内角和=(n−2)·180°，外角和恒为360°。</li>
+<li>重要线段：中线（平分面积）、高、角平分线；三角形具有<b>稳定性</b>。</li></ul>
+<div class="ext"><b>常考模型：</b>A字型、飞镖型、8字型；两内角平分线夹角=90°+½∠A；内角与外角平分线夹角=½∠A。</div>`},
+"全等三角形":{part:"四、图形与几何",grade:"八上·推理基石",html:`
+<div class="def"><b>概念：</b>能够完全重合的两个三角形，对应边相等、对应角相等。</div>
+<table><tr><th>判定</th><th>条件</th><th>备注</th></tr>
+<tr><td>SSS</td><td>三边对应相等</td><td>稳定性</td></tr>
+<tr><td>SAS</td><td>两边及<b>夹角</b></td><td>"边边角"不能判定</td></tr>
+<tr><td>ASA</td><td>两角及夹边</td><td></td></tr>
+<tr><td>AAS</td><td>两角及对边</td><td></td></tr>
+<tr><td>HL</td><td>斜边+直角边</td><td>直角三角形专属</td></tr></table>
+<ul><li><b>角平分线性质</b>：角平分线上的点到两边距离相等（逆定理成立）。</li></ul>
+<div class="ext"><b>全等模型：</b>平移型、对称型、一线三等角（K形）、手拉手、倍长中线、截长补短、角平分线双垂。</div>`},
+"轴对称与等腰三角形":{part:"四、图形与几何",grade:"八上",html:`
+<ul><li><b>轴对称</b>：沿直线折叠重合；垂直平分线上的点到两端点距离相等。</li>
+<li><b>等腰三角形</b>：等边对等角；<b>三线合一</b>；判定：等角对等边。</li>
+<li><b>等边三角形</b>：三边相等、三角均60°；含30°直角三角形：30°角对边=斜边一半。</li>
+<li>分类讨论：已知两边求第三边、顶角底角不确定时讨论。</li>
+<li><b>最短路径（将军饮马）</b>：作对称点化折为直。</li></ul>
+<div class="ext"><b>折叠问题</b>：折叠 ⟺ 全等 + 对称，配合勾股列方程是核心方法。</div>`},
+"勾股定理":{part:"四、图形与几何",grade:"八下",html:`
+<div class="formula">a²+b²=c²</div>
+<ul><li><b>逆定理</b>：若 a²+b²=c² 则为直角三角形（c 为最大边）。</li>
+<li>常见勾股数：3,4,5；5,12,13；6,8,10；7,24,25；8,15,17 及倍数。</li>
+<li>应用：面积法证明（赵爽弦图）；已知两边求第三边（讨论斜边）；折叠+勾股列方程；展开图最短路径。</li></ul>
+<div class="ext"><b>网格问题</b>：构造直角三角形求线段长、画 √5、√10；天津中考特色"无刻度直尺网格作图题"。</div>`},
+"平行四边形与特殊四边形":{part:"四、图形与几何",grade:"八下",html:`
+<ul><li><b>平行四边形性质</b>：对边平行且相等、对角相等、对角线互相平分。</li>
+<li><b>判定</b>：两组对边分别平行/相等、一组对边平行且相等、对角线互相平分等。</li>
+<li><b>三角形中位线</b>：平行于第三边且等于其一半（见中点，连中位线/倍长中线）。</li></ul>
+<table><tr><th>图形</th><th>判定要点</th><th>特性</th></tr>
+<tr><td>矩形</td><td>有一直角的▱ / 对角线相等的▱</td><td>直角三角形斜边中线=斜边一半</td></tr>
+<tr><td>菱形</td><td>一组邻边相等的▱ / 对角线垂直的▱</td><td>面积=对角线积÷2</td></tr>
+<tr><td>正方形</td><td>矩形+菱形兼具</td><td>对角线平分内角成45°</td></tr></table>
+<div class="ext"><b>斜边中线模型</b>：直角+中点 → 压轴高频。</div>`},
+"旋转与中心对称":{part:"四、图形与几何",grade:"九上",html:`
+<ul><li><b>旋转三要素</b>：中心、方向、角度。对应点到中心距离相等；旋转前后图形全等。</li>
+<li><b>中心对称</b>：旋转180°重合；对应点连线经过对称中心且被平分。中心对称图形：平行四边形、矩形、菱形、正方形、圆（<b>等边三角形不是</b>）。</li></ul>
+<div class="ext"><b>半角模型</b>：正方形中90°含45°，旋转补全证和差关系——旋转是"天津卷第24题"的常客。</div>`},
+"相似三角形":{part:"四、图形与几何",grade:"九下·几何核心",html:`
+<div class="def"><b>概念：</b>形状相同的图形，对应边的比为相似比。</div>
+<ul><li>比例性质：a/b=c/d ⟺ ad=bc；合比、等比定理。</li>
+<li><b>判定</b>：两角对应相等（最常用）；两边成比例夹角相等；三边成比例；平行截相似。</li>
+<li><b>性质</b>：周长比=相似比；<b>面积比=相似比²</b>；对应线段比=相似比。</li></ul>
+<div class="ext"><b>高频模型：</b>A字/8字（含斜A斜8）、一线三等角、母子相似（射影定理：CD²=AD·BD）、手拉手旋转相似。应用：测高（物高/影长）、坐标系存在性（对应顺序需分类！）。</div>`},
+"锐角三角函数":{part:"四、图形与几何",grade:"九下",html:`
+<div class="def">Rt△中：sin A=对/斜，cos A=邻/斜，tan A=对/邻。</div>
+<div class="formula">sin 30°=1/2, cos 30°=√3/2, tan 30°=√3/3</div><div class="formula">sin 45°=cos 45°=√2/2, tan 45°=1</div><div class="formula">sin 60°=√3/2, cos 60°=1/2, tan 60°=√3</div>
+<ul><li>关系：sin²A+cos²A=1；tan A=sin A/cos A。</li>
+<li><b>解斜三角形必作高</b>（化斜为直）；设未知数列方程。</li>
+<li>应用：<b>仰角俯角、坡度 i=tan θ、方位角</b>（北偏东…）、航海问题。</li></ul>`},
+"圆":{part:"四、图形与几何",grade:"九上·压轴板块",html:`
+<ul><li><b>垂径定理</b>：垂直于弦的直径平分弦及其所对弧。核心方法：<b>连半径、作弦心距 → 勾股+垂径</b>：r²=d²+(a/2)²。</li>
+<li><b>圆周角定理</b>：圆周角=圆心角一半；同弧等圆周角；<b>直径所对圆周角是直角</b>；圆内接四边形对角互补。</li>
+<li><b>切线</b>：判定（连半径证垂直）；性质（有切点，连半径，得垂直）；切线长定理。</li></ul>
+<div class="formula">弧长 l=nπr/180</div><div class="formula">S扇形=nπr²/360=½lr</div><div class="formula">圆锥侧面积=πrl</div>
+<div class="ext"><b>常考：</b>四点共圆、<b>隐圆</b>（定点定长/定角定弦/直角对定边）、切线与相似综合、正多边形与圆。</div>`},
+"投影与视图":{part:"四、图形与几何",grade:"九下",html:`
+<ul><li><b>三视图</b>：主视图（正面）、左视图、俯视图；长对正、高平齐、宽相等。</li>
+<li>投影：平行投影（太阳光）与中心投影（灯光）。</li>
+<li>展开与折叠：正方体11种展开图；侧面展开图求最短路径。</li></ul>`},
+"统计":{part:"五、统计与概率",grade:"七下·八下",html:`
+<ul><li><b>全面调查与抽样调查</b>：范围大、有破坏性时用抽样；样本容量是数目不带单位。</li>
+<li>统计图：条形（数量）、折线（趋势）、扇形（占比：圆心角=占比×360°）、频数分布直方图。</li></ul>
+<table><tr><th>统计量</th><th>定义</th><th>特点</th></tr>
+<tr><td>平均数</td><td>数据和÷个数（加权）</td><td>受极端值影响</td></tr>
+<tr><td>中位数</td><td>排序后中间的数</td><td>不受极端值影响</td></tr>
+<tr><td>众数</td><td>出现最多的数（可多个）</td><td>反映集中值</td></tr>
+<tr><td>方差</td><td>s²=(1/n)Σ(xᵢ−x̄)²</td><td>越小越稳定</td></tr></table>
+<ul><li>用样本估计总体（统计思想核心）。</li></ul>`},
+"概率":{part:"五、统计与概率",grade:"九上",html:`
+<div class="def"><b>概念：</b>必然事件 P=1、不可能事件 P=0、随机事件 0&lt;P&lt;1。P(A)=m/n（等可能）。</div>
+<ul><li><b>列举法、列表法（两步）、树状图法</b>（两步以上，分清放回/不放回）。</li>
+<li><b>用频率估计概率</b>：频率稳定于概率（频率≠概率）。</li>
+<li>游戏公平性：双方概率相等才公平。</li></ul>`}
+};
+
+/* ================= 简略版学期 → 概念词条 ================= */
+const SEMESTERS = [
+{name:"七上",items:[["有理数","数轴、相反数、绝对值、四则运算、科学记数法"],["整式","同类项、合并去括号、幂运算、乘法公式"],["一元一次方程","解法五步、行程/工程/利润应用"],["线与角","直线射线线段、余角补角、角平分线"]]},
+{name:"七下",items:[["相交线与平行线","对顶角、三线八角、平行判定与性质、平移"],["实数","平方根、立方根、无理数、估算大小"],["平面直角坐标系","坐标、象限、对称与平移"],["二元一次方程组","代入/加减消元、实际应用"],["不等式与不等式组","性质（负号变向）、解集、方案选择"],["统计","全面/抽样调查、统计图表、数据分析"]]},
+{name:"八上",items:[["三角形","三边关系、内角和、外角、中线/高/角平分线"],["全等三角形","SSS/SAS/ASA/AAS/HL、角平分线性质"],["轴对称与等腰三角形","垂直平分线、三线合一、等边、最短路径"],["整式","幂运算、乘法公式、整式乘法"],["因式分解","提公因式/公式法/十字相乘"],["分式","定义、基本性质、运算、分式方程"]]},
+{name:"八下",items:[["二次根式","性质、运算、分母有理化"],["勾股定理","定理及逆定理、折叠问题、网格作图"],["平行四边形与特殊四边形","矩形/菱形/正方形、中位线"],["一次函数","图象性质、k与b的意义、方案应用"],["统计","平均数/中位数/众数/方差、样本估计总体"]]},
+{name:"九上",items:[["一元二次方程","配方法/公式法、判别式、韦达定理、应用"],["二次函数","三种形式、顶点对称轴、平移、最值"],["旋转与中心对称","旋转性质、中心对称图形"],["圆","垂径定理、圆周角、切线、弧长扇形"],["概率","列举法、列表/树状图求概率"]]},
+{name:"九下",items:[["反比例函数","双曲线图象、k的几何意义"],["相似三角形","判定与性质、射影定理、位似"],["锐角三角函数","定义、特殊角、解直角三角形及应用"],["投影与视图","三视图、展开与折叠"]]}
+];
+
+/* ================= 工具 ================= */
+const $=s=>document.querySelector(s);
+const main=$("#main"), crumb=$("#crumb");
+const DIFFS=["简单","中等","较难","难"];
+/* HTML 转义：题干/答案含 <  >  & 等数学符号时必须转义，否则被浏览器当标签吞掉 */
+const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const escAttr=s=>esc(s).replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+const problemsOf=c=>PROBLEMS.filter(p=>p.c===c);
+const typesOf=c=>{const m={};problemsOf(c).forEach(p=>m[p.t]=(m[p.t]||0)+1);return m;};
+
+let state={concept:null,type:null,diff:null};
+
+function setCrumb(){
+  let h='<span class="step '+(state.concept?'clickable':'active')+'" data-nav="home">首页 · 简略版</span>';
+  if(state.concept) h+='<span class="sep">›</span><span class="step '+(state.type?'clickable':'active')+'" data-nav="concept">'+esc(state.concept)+'</span>';
+  if(state.type) h+='<span class="sep">›</span><span class="step '+(state.diff?'clickable':'active')+'" data-nav="type">'+esc(state.type)+'</span>';
+  if(state.diff) h+='<span class="sep">›</span><span class="step active">'+state.diff+'（'+problemsOfView().length+'题）</span>';
+  crumb.innerHTML=h;
+  crumb.querySelectorAll("[data-nav]").forEach(el=>el.addEventListener("click",()=>{
+    const t=el.dataset.nav;
+    if(t==="home") showHome();
+    else if(t==="concept") showConcept(state.concept,true);
+    else if(t==="type") showTypes(state.concept,true);
+  }));
+}
+function problemsOfView(){return PROBLEMS.filter(p=>p.c===state.concept&&p.t===state.type&&p.d===state.diff);}
+window.scrollTo(0,0);
+
+/* ================= 首页（简略版） ================= */
+function showHome(){
+  state={concept:null,type:null,diff:null};
+  let h=`<h2 class="sec">〇、全学科总览：一条主线贯穿三年</h2>
+  <div class="flow"><b>数（有理数→实数）</b><span class="arrow">➜</span><b>式（整式→分式→二次根式）</b><span class="arrow">➜</span><b>方程与不等式</b><span class="arrow">➜</span><b>函数（一次→反比例→二次）</b><span class="arrow">➜</span><b>几何（线→形→圆）</b><span class="arrow">➜</span><b>统计与概率</b></div>
+  <h2 class="sec">一、各学期核心知识点（点击词语进入概念详解与刷题）</h2>
+  <div class="grid g2">`;
+  SEMESTERS.forEach((sem,si)=>{
+    const cls=si<2?"":si<4?"":si<5?"": "";
+    h+=`<div class="card"><h3>${sem.name} <span style="font-size:11px;color:#6b7280;font-weight:400">共${sem.items.length}个知识板块</span></h3><ul>`;
+    sem.items.forEach(([term,desc])=>{
+      const n=problemsOf(term).length;
+      h+=`<li><span class="term" data-c="${escAttr(term)}">${esc(term)}<span class="cnt">${n}题</span></span> <span style="color:#9ca3af;font-size:12px">${esc(desc)}</span></li>`;
+    });
+    h+=`</ul></div>`;
+  });
+  h+=`</div>
+  <div class="note"><b>使用说明：</b>点击上方蓝色词语 ➜ 查看概念详解 ➜ 点击"查看相关题型" ➜ 选择题型 ➜ 选择难度（简单/中等/较难/难）➜ 查看对应习题与答案。${HAS_REAL_DATA
+    ? `当前题库共 <b>${PROBLEMS.length}</b> 题，来自你自己导入的题源。`
+    : `当前为<b>示例题库</b>，共 ${PROBLEMS.length} 道自编通用例题。想导入真实题源：把试卷放进 <code>papers/</code>，然后运行 <code>python tools/import_docx.py</code> + <code>python tools/build_data_js.py</code>（详见 README）。`}</div>`;
+  main.innerHTML=h;
+  main.querySelectorAll(".term").forEach(el=>el.addEventListener("click",()=>showConcept(el.dataset.c)));
+  setCrumb();
+}
+
+/* ================= 概念详解 ================= */
+function showConcept(c,keepTypes){
+  state={concept:c,type:null,diff:null};
+  const info=CONCEPTS[c]||{part:"",grade:"",html:""};
+  const n=problemsOf(c).length;
+  let h=`<div class="concept-head">
+    <span class="badge">${esc(info.part)}</span>
+    <h2>${esc(c)} <span style="font-size:13px;color:#6b7280;font-weight:400">（${esc(info.grade)}）</span></h2>
+    <span class="back" data-nav="home">← 返回简略版</span>
+  </div>
+  <div class="detail-card">${info.html}</div>
+  <div class="open-types">
+    <button id="btnTypes">📂 点击查看相关题型（共 ${n} 题）</button>
+    <span class="hint">点击概念按钮展开题型列表，再逐层选择题型与难度</span>
+  </div>
+  <div class="types-panel" id="typesPanel"></div>`;
+  main.innerHTML=h;
+  main.querySelector("[data-nav='home']").addEventListener("click",showHome);
+  $("#btnTypes").addEventListener("click",()=>showTypes(c));
+  if(keepTypes) showTypes(c);
+  setCrumb();
+}
+
+/* ================= 题型列表 ================= */
+function showTypes(c){
+  state={concept:c,type:null,diff:null};
+  const types=typesOf(c);
+  const entries=Object.entries(types).sort((a,b)=>b[1]-a[1]);
+  const panel=$("#typesPanel");if(!panel){showConcept(c,true);return;}
+  let h=entries.length?entries.map(([t,n])=>`<span class="type-chip" data-t="${escAttr(t)}">${esc(t)}<span class="n">${n}题</span></span>`).join(""):
+    `<div class="empty">该概念下暂未收录题目</div>`;
+  panel.innerHTML=h;panel.classList.add("show");
+  panel.querySelectorAll(".type-chip").forEach(el=>el.addEventListener("click",()=>showDiff(c,el.dataset.t)));
+  setCrumb();
+}
+
+/* ================= 难度选择 ================= */
+function showDiff(c,t){
+  state={concept:c,type:t,diff:null};
+  const list=PROBLEMS.filter(p=>p.c===c&&p.t===t);
+  const cnt={};list.forEach(p=>cnt[p.d]=(cnt[p.d]||0)+1);
+  let h=`<div class="diff-head">
+    <span class="badge" style="font-size:12px;color:#fff;background:var(--blue);border-radius:8px;padding:3px 10px;">${esc(c)}</span>
+    <h2>题型：${esc(t)}（共 ${list.length} 题）</h2>
+    <span class="back" data-nav="concept" style="font-size:13px;color:var(--blue);cursor:pointer;background:var(--blue-bg);border:1px solid #bfdbfe;border-radius:8px;padding:5px 12px;">← 返回题型列表</span>
+  </div>
+  <p style="font-size:13px;color:#6b7280;margin-bottom:8px">请选择难度：</p>
+  <div class="diff-grid">`;
+  DIFFS.forEach((d,i)=>{
+    const n=cnt[d]||0;
+    h+=`<button class="diff-btn d${i+1} ${n?'':'disabled'}" data-d="${d}" ${n?'':'disabled'}><div class="dname">${d}</div><div class="dcount">${n} 题</div></button>`;
+  });
+  h+=`</div><div id="probArea"></div>`;
+  main.innerHTML=h;
+  main.querySelector("[data-nav='concept']").addEventListener("click",()=>showConcept(c,true));
+  main.querySelectorAll(".diff-btn:not(.disabled)").forEach(el=>el.addEventListener("click",()=>showProblems(c,t,el.dataset.d)));
+  setCrumb();
+}
+
+/* ================= 题目列表 ================= */
+function showProblems(c,t,d){
+  state={concept:c,type:t,diff:d};
+  const list=problemsOfView();
+  const dcls={"简单":"d1","中等":"d2","较难":"d3","难":"d4"}[d]||"";
+  let h=`<div class="diff-head">
+    <span class="badge" style="font-size:12px;color:#fff;background:var(--blue);border-radius:8px;padding:3px 10px;">${esc(c)} · ${esc(t)}</span>
+    <h2>${esc(d)}难度（${list.length} 题）</h2>
+    <span class="back" data-nav="type" style="font-size:13px;color:var(--blue);cursor:pointer;background:var(--blue-bg);border:1px solid #bfdbfe;border-radius:8px;padding:5px 12px;">← 返回难度选择</span>
+  </div>`;
+  list.forEach((p,i)=>{
+    const imgsHtml = (p.imgs && p.imgs.length) ? `<div class="qimgs">${p.imgs.map(s=>`<img src="${escAttr(s)}" loading="lazy" alt="">`).join('')}</div>` : '';
+    h+=`<div class="prob-card" style="border-left-color:${{"简单":"#059669","中等":"#2563eb","较难":"#d97706","难":"#dc2626"}[d]}">
+      <div class="meta"><span class="src">${esc(p.src)}</span><span class="diff ${esc(d)}">${esc(d)}</span></div>
+      <div class="qtext">${esc(p.q)}</div>
+      ${imgsHtml}
+      <button class="ans-btn">👁 查看答案与思路</button>
+      <div class="anstext"><b>答案：</b>${esc(p.a) || '<i style="color:#9ca3af">(暂无答案，可搜索补充)</i>'}</div>
+    </div>`;
+  });
+  main.innerHTML=h;
+  main.querySelector("[data-nav='type']").addEventListener("click",()=>showDiff(c,t));
+  main.querySelectorAll(".ans-btn").forEach(btn=>btn.addEventListener("click",()=>{
+    const ans=btn.nextElementSibling;
+    const open=ans.classList.toggle("show");
+    btn.textContent=open?"🙈 收起答案":"👁 查看答案与思路";
+  }));
+  setCrumb();
+}
+
+/* ================= 启动 ================= */
+$("#globalStat").textContent = HAS_REAL_DATA
+  ? `题库共 ${PROBLEMS.length} 题 ｜ 概念词条 ${Object.keys(CONCEPTS).length} 个`
+  : `示例题库 ${PROBLEMS.length} 题 ｜ 概念词条 ${Object.keys(CONCEPTS).length} 个 ｜ 导入自己的题源后自动切换`;
+
+if (!HAS_REAL_DATA) {
+  console.info('%c当前展示的是示例题库', 'color:#b45309;font-weight:bold');
+  console.info('导入真实题源：把试卷放进 papers/ → python tools/import_docx.py → python tools/build_data_js.py');
+}
+showHome();
+</script>
+</body>
+</html>

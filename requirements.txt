@@ -1,0 +1,17 @@
+# 题目抽取与图形裁剪所需的 Python 依赖
+# 仅在你打算自己导入题源时才需要安装
+#
+#   pip install -r requirements.txt
+#
+# 说明：
+#   pymupdf              读取 PDF 文本层、渲染页面、裁剪图形
+#   opencv-python        扫描版页面的图形区域定位（墨迹聚类）
+#   numpy                opencv 依赖
+#   rapidocr-onnxruntime 扫描版 PDF 的中文 OCR（模型较大，首次运行会下载）
+#
+# 只处理 Word(.docx) 试卷时无需安装任何依赖——tools/import_docx.py 只用标准库。
+
+pymupdf>=1.24
+opencv-python>=4.9
+numpy>=1.26
+rapidocr-onnxruntime>=1.3
